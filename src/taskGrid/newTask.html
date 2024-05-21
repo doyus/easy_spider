@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <script src="jquery-3.4.1.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="bootstrap/js/bootstrap.js"></script>
+    <script src="vue.js"></script>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css"></link>
+    <title>新任务 | New Task</title>
+<style>
+    @media (max-width: 500px) {
+        #newTask{
+            margin-left:10%!important;
+        }
+    }
+</style>
+
+</head>
+
+
+<body>
+    <div class="row" style="margin-top: 40px" id="newTask">
+        <div class="col-md-8" style="margin:0 auto;" style="text-align: center;">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb" style="padding-left:0;background-color: white">
+                    <li class="breadcrumb-item" @click="gotoHome"><a href="#">{{"Home~首页" | lang}}</a></li>
+                    <li class="breadcrumb-item active" aria-current="page" style="color: black">{{"New Task~新任务" | lang}}</li>
+                </ol>
+            </nav>
+            <h4 style="text-align: center;">{{"New Task~新任务" | lang}}</h4>
+            <div class="form-group">
+                <label>请输入网页网址（以http或https开头）</label>
+                <input class="form-control"  type="text" value="http://baidu.com" id="pauseKey"></input>
+            </div>
+            <p><a @click="startDesign('zh')" class="btn btn-primary btn-lg"
+                  style="margin-top: 15px; width: 300px;height:60px;padding-top:12px;color:white">设计/修改任务</a>
+            </p>
+        </div>
+    </div>
+</body>
+
+</html>
+<script src="global.js"></script>
+<script>
+    let app = new Vue({
+        el: '#newTask',
+        data: {
+            backEndAddressServiceWrapper: getUrlParam("backEndAddressServiceWrapper"),
+            user_data_folder: "",
+            mobile: getUrlParam("mobile"),
+            language: getUrlParam("lang"),
+        },
+        methods: {
+            gotoHome: function () {
+                let url = "";
+                if (getUrlParam("lang") == "zh") {
+                    url = "taskList.html?lang=zh&backEndAddressServiceWrapper=" + app.$data.backEndAddressServiceWrapper
+                } else {
+                    url = "taskList.html?lang=en&backEndAddressServiceWrapper=" + app.$data.backEndAddressServiceWrapper
+                }
+                window.location.href = url;
+            },
+            gotoHomes: function () {
+                let url = "";
+                if (getUrlParam("lang") == "zh") {
+                    url = window.location.href = "FlowChart_CN.html?type=3&lang=zh" + "&id=&wsport="+
+                        "&backEndAddressServiceWrapper=" + app.$data.backEndAddressServiceWrapper
+                } else {
+                    url = "FlowChart_CN.html?lang=en&backEndAddressServiceWrapper=" + app.$data.backEndAddressServiceWrapper
+                }
+                window.location.href = url;
+            }
+        }
+    });
+
+</script>

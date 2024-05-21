@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <script src="jquery-3.4.1.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="vue.js"></script>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css"></link>
+    <title>任务信息 | Task Information</title>
+    <style>
+        table {
+            table-layout: auto;
+        }
+
+        table,
+        td,
+        th,
+        tr {
+            border-color: black !important;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+            max-width: 400px;
+            min-width: 150px;
+        }
+
+        .ID {
+            width: 10%;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="row" style="margin-top: 40px;">
+
+    <div class="col-md-8" style="margin:0 auto" id="taskInfo" v-if="show">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb" style="padding-left:0;background-color: white">
+                <li class="breadcrumb-item" @click="gotoHome"><a href="#">{{"Home~首页" | lang}}</a></li>
+                <li class="breadcrumb-item active" aria-current="page"
+                    style="color: black">{{"Task Information~任务信息" | lang}}
+                </li>
+            </ol>
+        </nav>
+        <h4 style="text-align: center;">{{"Task Information~任务信息" | lang}}</h4>
+        <p>{{"Task Name:~任务名称：" | lang}} {{task["name"]}}</p>
+        <p style="word-wrap: break-word;word-break: break-all;overflow: hidden;max-height: 100px;">{{"Task Description:~任务描述：" | lang}} {{task["desc"]}}</p>
+        <p style="word-wrap: break-word;word-break: break-all;overflow: hidden;max-height: 100px;">{{"Example URL:~样例网址：" | lang}} {{task["url"]}}</p>
+        <p style="word-wrap: break-word;word-break: break-all;overflow: hidden;max-height: 100px;">{{"Create Time:~创建时间：" | lang}} {{dateFormat(task["create_time"])}}</p>
+        <p style="word-wrap: break-word;word-break: break-all;overflow: hidden;max-height: 100px;">{{"Update Time:~更新时间：" | lang}} {{dateFormat(task["update_time"])}}</p>
+        <p><a style="margin-top: 5px" href="javascript:void(0)" v-on:click="modifyTask(task['id'],task['url'])"
+              class="btn btn-primary">{{"Modify Task~修改任务s" | lang}}</a>
+            <a style="margin-top: 5px" href="javascript:void(0)" v-on:click="invokeTask(task['id'],task['url'])"
+               class="btn btn-primary">{{"Execute Task~执行任务" | lang}}</a></p>
+    </div>
+</div>
+
+</body>
+
+</html>
+<script src="global.js"></script>
+<script>
+    var sId = getUrlParam('id');
+    var app = new Vue({
+        el: '#taskInfo',
+        data: {
+            task: {},
+            show: false, //是否渲染
+            backEndAddressServiceWrapper: getUrlParam("backEndAddressServiceWrapper"),
+        },
+        methods: {
+            dateFormat: DateFormat,
+            gotoHome: function () {
+                let url = "";
+                if (getUrlParam("lang") == "zh") {
+                    url = "taskList.html?lang=zh&type=" + getUrlParam("type") + "&wsport=" + getUrlParam("wsport") + "&backEndAddressServiceWrapper=" + app.$data.backEndAddressServiceWrapper
+                } else {
+                    url = "taskList.html?lang=en&type=" + getUrlParam("type") + "&wsport=" + getUrlParam("wsport") + "&backEndAddressServiceWrapper=" + app.$data.backEndAddressServiceWrapper
+                }
+                window.location.href = url;
+            },
+            modifyTask: function (id, url) {
+                let message = { //显示flowchart
+                    type: 1, //消息类型，传递链接
+                    message: {
+                        "id": id,
+                    }
+                };
+                console.log('11111111111111111111111111111111111111111111111111')
+                // ws.send(JSON.stringify(message));
+                // window.location.href = url; //跳转链接
+                if (getUrlParam("lang") == "zh") {
+                    url="FlowChart_CN.html?type=" + getUrlParam("type") + "&lang=" + getUrlParam("lang") + "&id=" + id + "&wsport=" + getUrlParam("wsport") + "&backEndAddressServiceWrapper=" + app.$data.backEndAddressServiceWrapper
+                    console.log(url)
+                    window.location.href = "FlowChart_CN.html?type=" + getUrlParam("type") + "&lang=" + getUrlParam("lang") + "&id=" + id + "&wsport=" + getUrlParam("wsport") + "&backEndAddressServiceWrapper=" + app.$data.backEndAddressServiceWrapper
+                } else {
+                    window.location.href = "FlowChart.html?type=" + getUrlParam("type") + "&lang=" + getUrlParam("lang") + "&id=" + id + "&wsport=" + getUrlParam("wsport") + "&backEndAddressServiceWrapper=" + app.$data.backEndAddressServiceWrapper
+                }
+
+            },
+            invokeTask: function (id) {
+                window.location.href = "executeTask.html?type=" + getUrlParam("type") + "&lang=" + getUrlParam("lang") + "&id=" + id + "&wsport=" + getUrlParam("wsport") + "&backEndAddressServiceWrapper=" + app.$data.backEndAddressServiceWrapper;
+            },
+        }
+    });
+    $.get(app.$data.backEndAddressServiceWrapper + "/queryTask?id=" + sId, function (result) {
+        app.$data.task = result;
+        app.$data.show = true;
+    });
+</script>

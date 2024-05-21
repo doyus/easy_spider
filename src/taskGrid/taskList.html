@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <script src="jquery-3.4.1.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="vue.js"></script>
+    <link rel="stylesheet" href="bootstrap/css/bootstrap.css"></link>
+    <link rel="stylesheet" href="element-ui/index.css"></link>
+    <script src="element-ui/index.js"></script>
+    <title>任务列表 | Task List</title>
+</head>
+<style>
+    th, td {
+        text-align: left;
+        vertical-align: middle !important;
+    }
+
+    @media (max-width: 500px) {
+        .tasklist {
+            margin-left: 10% !important;
+
+        }
+    }
+
+    .search-header {
+        display: flex;
+        justify-content: flex-end; /* Right align the search box */
+        align-items: center;
+    }
+
+    .search-input {
+        /*margin-right: 8px; !* Optional: Adjust spacing between input and button *!*/
+    }
+
+    .task-links {
+        display: flex;
+        justify-content: space-between; /* Spread links evenly */
+    }
+</style>
+<body>
+<div class="row" style="margin-top: 40px;">
+    <div style="margin:0 auto; min-width: 70%;" id="taskList" class="tasklist">
+        <h4 style="text-align: center;">{{"Task List~任务列表" | lang}}</h4>
+        <h5 style="text-align: center;"
+            v-if="mobile==1">{{"View this table by direction keys on keyboard~按键盘方向键浏览此表格" | lang}}</h5>
+<!--        <p><a href="javascript:void(0)" v-on:click="newTask"-->
+<!--              class="btn btn-primary">{{"New Task~创建新任务" | lang}}</a></p>-->
+        <el-table
+                style="width: 100%"
+                :empty-text="LANG('No Task~暂无任务')"
+                :data="list.filter(data => !search || (data.name.toLowerCase().includes(search.toLowerCase())) || (data.url.toLowerCase().includes(search.toLowerCase())) || (data.links.includes(search.toLowerCase())) || (data.desc.includes(search.toLowerCase())) || (data.id.toString().includes(search.toLowerCase())))"
+                :default-sort="{prop: 'mtime', order: 'descending'}"
+        >
+
+            <el-table-column
+                    prop="id"
+                    :label="LANG('Task ID~任务ID')"
+                    sortable
+                    width="120"
+                    align="center"
+            >
+            </el-table-column>
+            <el-table-column
+                    prop="name"
+                    :label="LANG('Task Name~任务名称')"
+                    sortable
+                    align="center"
+            >
+            </el-table-column>
+            <el-table-column
+                    prop="url"
+                    label="URL"
+                    sortable
+            >
+            </el-table-column>
+            <!--                <el-table-column-->
+            <!--                  prop="mtime"-->
+            <!--                  :label="LANG('Update Time~更新时间')"-->
+            <!--                  sortable-->
+            <!--                  :formatter="formatDate"-->
+            <!--                  width="170"-->
+            <!--                >-->
+            </el-table-column>
+            <el-table-column
+                    width="350"
+                    align="center">
+                <!-- Header template for the search input -->
+                <template slot="header" slot-scope="scope">
+                    <div class="search-header">
+                        <!-- Search input aligned to the right -->
+                        <el-input
+                                v-model="search"
+                                class="search-input"
+                                prefix-icon="el-icon-search"
+                                :placeholder="LANG('Please input keywords to search~请输入关键词搜索')">
+                        </el-input>
+                        <!--                          <el-button icon="el-icon-search"></el-button>-->
+                    </div>
+                </template>
+                <template slot-scope="scope">
+                    <!-- Use flex container to justify content space-around -->
+                    <div class="task-links">
+                        <a href="javascript:void(0)" v-on:click="browseTask(scope.$index, scope.row)">{{ "View~任务信息"
+                            | lang }}</a>
+                        <a href="javascript:void(0)" v-if="type==3" v-on:click="modifyTask(scope.$index, scope.row)">{{
+                            "Modify~修改任务" | lang }}</a>
+<!--                        <a href="javascript:void(0)"-->
+<!--                           v-on:dblclick="deleteTask(scope.$index, scope.row)">{{ "Delete (Double Click)~删除任务（双击）" | lang }}</a>-->
+                    </div>
+                </template>
+            </el-table-column>
+        </el-table>
+    </div>
+</div>
+</body>
+
+</html>
+<script src="global.js"></script>
+<script>
+    let app = new Vue({
+        el: '#taskList',
+        data: {
+            search: '',
+            list: [],
+            type: 3, //记录服务行为
+            mobile: getUrlParam("mobile"),
+            backEndAddressServiceWrapper: getUrlParam("backEndAddressServiceWrapper"),
+        },
+        methods: {
+            LANG: function (text) {
+                if (getUrlParam("lang") == "en" || getUrlParam("lang") == "") {
+                    return text.split("~")[0];
+                } else if (getUrlParam("lang") == "zh") {
+                    return text.split("~")[1];
+                }
+            },
+            modifyTask: function (index, row) {
+                let id = row.id;
+                let url = row.links.split("\n")[0];
+                console.log(index, row)
+                let message = { //显示flowchart
+                    type: 1, //消息类型，传递链接
+                    message: {
+                        "id": id,
+                    }
+                };
+                ws.send(JSON.stringify(message));
+                window.location.href = url; //跳转链接
+            },
+            browseTask: function (index, row) {
+                let id = row.id;
+                window.location.href = "taskInfo.html?type=" + getUrlParam("type") + "&id=" + id + "&lang=" + getUrlParam("lang") + "&wsport=" + getUrlParam("wsport") + "&backEndAddressServiceWrapper=" + app.$data.backEndAddressServiceWrapper; //跳转链接
+            },
+            deleteTask: function (index, row) {
+                let id = row.id;
+                // let text = "Are you sure to remove the selected task?";
+                // if (getUrlParam("lang") == "en"|| getUrlParam("lang")=="") {
+                //     text = "Are you sure to remove the selected task?";
+                // } else if (getUrlParam("lang") == "zh") {
+                //     text = "确定要删除选中的任务吗？";
+                // }
+                // if (confirm(text)) {
+                $.get(app.$data.backEndAddressServiceWrapper + "/deleteTask?id=" + id, function (res) {
+                    $.get(app.$data.backEndAddressServiceWrapper + "/queryTasks", function (re) {
+                        result = re.sort(desc);
+                        app.$data.list = result;
+                    });
+                });
+                // alert("Sorry, the task cannot be deleted since the system is a demo system for paper reviewers, please contact the author (naibowang@u.nus.edu) to remove it.")
+                // }
+            },
+        }
+    });
+
+    let desc = function (x, y) {
+        return (x["id"] < y["id"]) ? 1 : -1
+    }
+    $.get(app.$data.backEndAddressServiceWrapper + "/queryTasks", function (re) {
+        // result = re.sort(desc);
+        app.$data.list = re;
+        if (getUrlParam("type") == "1") {
+            app.$data.type = 2;
+        }
+    });
+
+</script>
